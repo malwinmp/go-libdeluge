@@ -20,6 +20,17 @@ import (
 	"github.com/gdm85/go-rencode"
 )
 
+// FilePriority represents the download priority for a file within a torrent.
+// Valid values are in range [0..7], but only 0, 1, 4, 7 are normally used.
+type FilePriority int
+
+const (
+	FilePrioritySkip   FilePriority = 0 // Do Not Download
+	FilePriorityLow    FilePriority = 1
+	FilePriorityNormal FilePriority = 4
+	FilePriorityHigh   FilePriority = 7
+)
+
 // Options used when adding a torrent magnet/URL.
 // Valid options for v2: https://github.com/deluge-torrent/deluge/blob/deluge-2.0.3/deluge/core/torrent.py#L167-L183
 // Valid options for v1: https://github.com/deluge-torrent/deluge/blob/1.3-stable/deluge/core/torrent.py#L83-L96
@@ -38,6 +49,7 @@ type Options struct {
 	MoveCompleted             *bool
 	MoveCompletedPath         *string
 	AddPaused                 *bool
+	FilePriorities            []FilePriority // priority for each file in the torrent; range [0..7], use FilePriority* constants
 
 	// V2 defines v2-only options
 	V2 V2Options
@@ -73,6 +85,14 @@ func (o *Options) toDictionary(v2daemon bool) rencode.Dictionary {
 			name = "compact_allocation"
 		}
 
+        if name == "file_priorities" {
+            var list rencode.List
+            for j := 0; j < f.Len(); j++ {
+                list.Add(int(f.Index(j).Interface().(FilePriority)))
+            }
+            dict.Add(name, list)
+            continue
+        }
 		dict.Add(name, reflect.Indirect(f).Interface())
 	}
 
