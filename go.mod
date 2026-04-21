@@ -1,4 +1,4 @@
-module github.com/gdm85/go-libdeluge
+module github.com/malwinmp/go-libdeluge
 
 go 1.20
 
